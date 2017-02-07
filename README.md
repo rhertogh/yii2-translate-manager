@@ -493,6 +493,7 @@ Use it with the Yii CLI
 ```
 ./yii translate/scan
 ./yii translate/optimize
+./yii translate/generate 
 ```
 
 ###Using google translate api

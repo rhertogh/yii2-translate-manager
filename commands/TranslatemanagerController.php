@@ -2,8 +2,12 @@
 
 namespace lajax\translatemanager\commands;
 
+use lajax\translatemanager\models\Language;
+use lajax\translatemanager\Module;
+use lajax\translatemanager\services\Generator;
 use lajax\translatemanager\services\Optimizer;
 use lajax\translatemanager\services\Scanner;
+use Yii;
 use yii\console\Controller;
 use yii\helpers\Console;
 
@@ -48,4 +52,28 @@ class TranslatemanagerController extends Controller {
         $this->stdout("{$items} removed from database.\n");
     }
 
+    public function actionGenerate($dir, $languageIds = null){
+        $this->stdout("Generating javascript translations...\n", Console::BOLD);
+
+        /** @var Module $module */
+        $module = Yii::$app->getModule('translatemanager');
+        $module->tmpDir = $dir;
+
+        if (empty($languageIds)) {
+            $languageIds = Language::find()
+                ->andWhere(['status' => Language::STATUS_ACTIVE])
+                ->select('language_id')
+                ->column();
+        }
+
+        if (count($languageIds)) {
+            foreach ($languageIds as $languageId) {
+                $generator = new Generator($module, $languageId);
+                $generator->run();
+            }
+            $this->stdout("Generated javascript translations for: " . implode(', ', $languageIds) . "\n");
+        } else {
+            $this->stdout("No languages to generate\n");
+        }
+    }
 }
